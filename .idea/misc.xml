@@ -3,8 +3,10 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/ko/AndroidStudioProjects/appstudyBook_Review/app/src/main/res/drawable/background_gray_stroke_radius_8.xml" value="0.367" />
         <entry key="..\:/Users/ko/AndroidStudioProjects/appstudyBook_Review/app/src/main/res/layout/activity_main.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/ko/AndroidStudioProjects/appstudyBook_Review/app/src/main/res/layout/item_book.xml" value="0.36614583333333334" />
+        <entry key="..\:/Users/ko/AndroidStudioProjects/appstudyBook_Review/app/src/main/res/layout/item_history.xml" value="0.36614583333333334" />
       </map>
     </option>
   </component>
