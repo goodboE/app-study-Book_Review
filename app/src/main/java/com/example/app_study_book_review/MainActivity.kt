@@ -1,6 +1,7 @@
 package com.example.app_study_book_review
 
 import HistoryAdapter
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -36,6 +37,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         initRecyclerView()
+        initHistoryRecyclerView()
+        initSearchEditText()
 
         db = Room.databaseBuilder(
             applicationContext,
@@ -79,14 +82,7 @@ class MainActivity : AppCompatActivity() {
 
 
 
-        binding.searchEditText.setOnKeyListener { v, keyCode, event ->
-            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == MotionEvent.ACTION_DOWN) {
-                search(binding.searchEditText.text.toString())
-                return@setOnKeyListener true // 이벤트 처리 했음
-            }
 
-            return@setOnKeyListener false    // 처리가 안됐고 다른 이벤트 처리?
-        }
 
     }
 
@@ -96,6 +92,7 @@ class MainActivity : AppCompatActivity() {
 
                 override fun onResponse(call: Call<SearchBookDto>, response: Response<SearchBookDto>) {
 
+                    hideHistoryView()
                     saveSearchKeyword(keyword)
                     if (response.isSuccessful.not()) {
                         Log.e(TAG, "NOT SUCCESS ... ")
@@ -107,22 +104,63 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 override fun onFailure(call: Call<SearchBookDto>, t: Throwable) {
+
+                    hideHistoryView()
                     Log.e(TAG, t.toString())
                 }
             })
     }
 
     private fun initRecyclerView() {
-        adapter = BookAdapter()
+        adapter = BookAdapter(itemClickedListener = {
+            val intent = Intent(this, DetailActivity::class.java)
+            intent.putExtra("bookModel", it)
+            startActivity(intent)
+        })
 
         binding.bookRecyclerView.layoutManager = LinearLayoutManager(this)
         binding.bookRecyclerView.adapter = adapter
     }
 
+    private fun initHistoryRecyclerView() {
+        historyAdapter = HistoryAdapter(historyDeleteClickedListener = {
+            deleteSearchKeyword(it)
+        })
+
+        binding.historyRecyclerView.layoutManager = LinearLayoutManager(this)
+        binding.historyRecyclerView.adapter = historyAdapter
+    }
+
+    private fun initSearchEditText() {
+        binding.searchEditText.setOnKeyListener { v, keyCode, event ->
+            if (keyCode == KeyEvent.KEYCODE_ENTER && event.action == MotionEvent.ACTION_DOWN) {
+                search(binding.searchEditText.text.toString())
+                return@setOnKeyListener true
+            }
+
+            return@setOnKeyListener false
+        }
+
+        binding.searchEditText.setOnTouchListener { v, event ->
+            if (event.action == MotionEvent.ACTION_DOWN) {
+                showHistoryView()
+            }
+            return@setOnTouchListener false
+        }
+
+
+    }
+
     private fun showHistoryView() {
         Thread {
             val keywords = db.historyDao().getAll().reversed()
-        }
+
+            runOnUiThread {
+                binding.historyRecyclerView.isVisible = true
+                historyAdapter.submitList(keywords.orEmpty())
+            }
+
+        }.start()
         binding.historyRecyclerView.isVisible = true
     }
     private fun hideHistoryView() {
@@ -132,6 +170,13 @@ class MainActivity : AppCompatActivity() {
     private fun saveSearchKeyword(keyword: String) {
         Thread {
             db.historyDao().insertHistory(History(null, keyword))
+        }.start()
+    }
+
+    private fun deleteSearchKeyword(keyword: String) {
+        Thread {
+            db.historyDao().delete(keyword)
+            showHistoryView()
         }.start()
     }
 

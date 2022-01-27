@@ -6,8 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.app_study_book_review.Model.History
 import com.example.app_study_book_review.databinding.ItemHistoryBinding
 
-class HistoryAdapter: ListAdapter<History, HistoryAdapter.HistoryItemViewHolder>(diffUtil){
-
+class HistoryAdapter(val historyDeleteClickedListener: (String) -> Unit) : ListAdapter<History, HistoryAdapter.HistoryItemViewHolder>(diffUtil){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HistoryItemViewHolder {
         return HistoryItemViewHolder(
@@ -28,6 +27,10 @@ class HistoryAdapter: ListAdapter<History, HistoryAdapter.HistoryItemViewHolder>
 
         fun bind(historyModel: History) {
             binding.historyKeywordTextView.text = historyModel.keyword
+
+            binding.historyKeywordDeleteButton.setOnClickListener {
+                historyDeleteClickedListener(historyModel.keyword.orEmpty())
+            }
         }
 
     }
